@@ -4,6 +4,8 @@
 
 ---
 
+# Part 1: Introduction
+
 ## Slide 1: Title Slide
 **Rapid Auto-Scaling Architecture Solution**
 - Handling 25x Traffic Spikes in Under 60 Seconds
@@ -12,7 +14,19 @@
 
 ---
 
-## Slide 2: Problem Statement
+## Slide 2: Agenda
+
+### Presentation Overview
+- **Part 1: Introduction**
+- **Part 2: Core Scaling Strategy**
+- **Part 3: Application & Image Optimization**
+- **Part 4: Resilient Architecture Patterns**
+- **Part 5: Monitoring & Measurement**
+- **Part 6: Conclusion**
+
+---
+
+## Slide 3: Problem Statement
 
 ### Current Challenges
 - **Traffic Spikes**: 25x normal load within 1 minute, multiple times per week
@@ -29,7 +43,7 @@
 
 ---
 
-## Slide 3: Proposed Solution Overview
+## Slide 4: Core Scaling Strategy: Proposed Solution Overview
 
 ### High-Level Architecture
 [link](https://www.mermaidchart.com/play?utm_source=mermaid_live_editor&utm_medium=toggle#pako:eNqFVm1P20gQ_iurVEKH7twjCS7UOlVyXqCUBELMgarmPqzX42QV2xut17ThdP_9ZtbGjeNA-RLv45lnZp6dGfNvR6gIOl7HcZxFJlQWy6W3yBhLlFp7TCQ8z6UgwKwgBY-FPAf7nm9VYTwGyXqRWec4Ud_FimvD7gdokRfhUvPNih4u6eHk26LjF0Y5geCJzJZswregF51_iK78-zzz0eiz0vJZZYYnbKYiRj45uoD-K9SfhrO__5xCqvSWDTCViLC-c-YyDZtECp43CK_HI2KkHxbUHOMnyIwz0hJ_6XzN4zVnv7OZVilgnUWT5MFm9QDaIP-hnOaQq0ILYLcbI1P5zI1UWYNiSAzDpMgN6D3nG9SfVZJUPpBFhwTsIscj1ylmoJIG_eNs513EumVSPNqywHADe7a9Xdve27b9Xdv-YdtX0qUwqIxMJGSozYwbLD5rSjsckC5Si0IaNtDA16UoFzxJQi7WbKKW2H5vxqEUh3fzgPlarKQBYQrdLGM4HZGNSlOeRSwA_SQF5BTnUaMDXhtoe2cW6zmvNNPd_CvS3BWAvbdLQorscbhOt9dieSX_U2rQIkRtwEDOqi5pRPZnMzQKNprGZqCUYTcY6wko1FQKrfKddJCUJw9TdpXyJTQrmJDcE4XpDnjC8Vas2FfZUkOOkXHmtEqSveD1_LahbhvqtaH-G8W7mJAdR-wovP705xBUA-xfXNPs-BsuVsDspNYjzAaFrfhe8ziWAucXIil2hu-VoB-QcMQNP7CBpl-Du8m33xad6RYfiHymZcrxxsmBlp9dQirLwAays2iTPt5hmY9HVwGxzDGh-krJcyRzo2VYGIjYkEoiMED1iSswijr3uLE4gsC_Gc19YhviMsYO1laBe5mCg20osWcoN8J2Nme9UY7fUuIMlZiqTGJgaq0jdhtSK_EQp9ZsG8rM5rdTtP65I23zAVYjqHWwbURr7V3O_Qv_hu4Po8U8s0mOeL4KFddRsze_-OPL8RxNv3BYtsXCOxb7zTGeXFP7TK5pHYm1vRlsC42VP6ML7o7l_lIlSWkhGbuP6YFV3WNH3_3Bgo1c27FhjvMJJ6Z0mgzsEQexPNu-tJD9thzRjinfoInFhwNESTT8KWvDB8r1qHSukil50RtxXDAVikeCbTeWEL6zkG0tivfSGOVr_HIy530jQ8qrCT20jIb7gE2Y4lRXR9kiUaU5RvE8L69aK6s_sS3w4YDhsA3hdwsxvtnU597eud84oy6NM4rSOGMZjbMVGpEI56OCrKRNyErahGp1mzCpg0haTkwFVkq18PLSWzC2wD5m_8saQcwqdVgsk8R7B93YjeEPnAG1Bu_dSdc9-xhWR-e7jMzK621-7FFQtpV_3Ac3dmv_U949PRe_8kfxXsKfxy6c1-7d0IXeya_cq7peMogxh5OaAj643ZNDFJ3__gfhbEux)
@@ -55,13 +69,8 @@
    - Adds/removes nodes based on pod scheduling demands
    - Supports spot instances for cost optimization
 
-#### **Traffic & Data Flow**:
-- **Ingress**: Load balancer distributes traffic to native microservices
-- **Circuit Breakers**: Prevent cascade failures during spikes
-- **CQRS**: Separates read (5-125 replicas) and write (2-5 replicas) scaling
-- **Event Streaming**: Kafka enables async communication and scaling triggers
 
-## Slide 5: Scaling Strategy - Phase 1
+## Slide 5: Core Scaling Strategy: Scaling Strategy - Phase 1
 
 ### GraalVM Native + Warm Pool Approach
 
@@ -76,7 +85,7 @@
 
 ---
 
-## Slide 6: Scaling Strategy - Phase 2
+## Slide 6: Core Scaling Strategy: Scaling Strategy - Phase 2
 
 ### Horizontal Pod Autoscaler (HPA)
 - **HPA Configuration**: Aggressive scaling from 3 to 75 replicas with 900% increase capability in 15 seconds for rapid response to traffic spikes
@@ -88,7 +97,19 @@
 
 ---
 
-## Slide 6.5: Node Scaling Architecture
+## Slide 7: Core Scaling Strategy: Event-Driven Scaling with KEDA
+
+### Predictive Scaling
+- **KEDA Configuration**: Event-driven autoscaler using Kafka queue depth and Prometheus custom metrics to trigger proactive scaling before traffic spikes
+
+### Benefits
+- **Proactive Scaling**: Scale before traffic hits
+- **Queue-Based**: React to Kafka message backlog
+- **Custom Metrics**: Use business-specific indicators
+
+---
+
+## Slide 8: Core Scaling Strategy: Node Scaling Architecture
 
 ### Multiple Node Pool Strategy
 
@@ -124,19 +145,7 @@
 
 ---
 
-## Slide 7: Event-Driven Scaling with KEDA
-
-### Predictive Scaling
-- **KEDA Configuration**: Event-driven autoscaler using Kafka queue depth and Prometheus custom metrics to trigger proactive scaling before traffic spikes
-
-### Benefits
-- **Proactive Scaling**: Scale before traffic hits
-- **Queue-Based**: React to Kafka message backlog
-- **Custom Metrics**: Use business-specific indicators
-
----
-
-## Slide 7.5: Scale-Down Strategy & Graceful Termination
+## Slide 9: Core Scaling Strategy: Scale-Down Strategy & Graceful Termination
 
 ### Cool Down Period Configuration
 
@@ -183,7 +192,7 @@
 
 ---
 
-## Slide 8: Java Pod Optimization - Native Compilation
+## Slide 10: Application & Image Optimization: Java Pod Optimization - Native Compilation
 
 ### Spring Boot Native Migration
 
@@ -198,7 +207,7 @@
 
 ---
 
-## Slide 9: Container Image Scaling Strategy
+## Slide 11: Application & Image Optimization: Container Image Scaling Strategy
 
 ### Image Download & Distribution
 
@@ -237,7 +246,7 @@
 
 ---
 
-## Slide 10: Architecture Patterns - Resilience
+## Slide 12: Architecture Patterns - Resilience
 
 ### Circuit Breaker Pattern
 - **Resilience Implementation**: Use Spring Cloud Circuit Breaker with fallback methods to prevent cascade failures and provide graceful degradation during database overload
@@ -249,7 +258,7 @@
 
 ---
 
-## Slide 11: Architecture Patterns - Scaling Separation
+## Slide 13: Architecture Patterns - Scaling Separation
 
 ### CQRS (Command Query Responsibility Segregation)
 - **Separation Strategy**: Split read and write operations into separate services allowing independent scaling - command services handle writes (2-5 replicas) while query services handle reads (5-125 replicas)
@@ -261,7 +270,7 @@
 
 ---
 
-## Slide 11.5: Data Layer Scaling & Caching Strategy
+## Slide 14: Data Layer Scaling & Caching Strategy
 
 ### Database Connection Pooling Optimization
 
@@ -342,7 +351,7 @@
 
 ---
 
-## Slide 12: Observability & Monitoring Strategy
+## Slide 15: Observability & Monitoring Strategy
 
 ### Monitoring Stack Architecture
 
@@ -431,7 +440,7 @@
 
 ---
 
-## Slide 13: Cost-Effectiveness Analysis
+## Slide 16: Cost-Effectiveness Analysis
 
 ### Image & Registry Cost Optimization
 - **Registry Replication**: Multi-region setup increases costs but reduces latency
@@ -449,9 +458,9 @@
 
 ---
 
-## Slide 14: Metrics for Success
+## Slide 17: Metrics for Success
 
-### Key Performance Indicators (KPIs)
+### Key Performlnce Indicators (KPIs)
 
 #### Performance Targets
 - **Scaling Time**: < 60 seconds to handle 25x traffic (vs current manual intervention)
@@ -484,7 +493,9 @@
 
 ---
 
-## Slide 15: Executive Summary
+# Part 6: Conclusion
+
+## Slide 18: Executive Summary
 
 ### Problem Statement
 - **Traffic Challenges**: 25x load spikes within 1 minute, multiple times per week
@@ -525,10 +536,9 @@
 
 ---
 
-## Slide 16: Questions & Discussion
+## Slide 19: Questions & Discussion
 
 ### Key Discussion Points
 1. **Migration Strategy**: Gradual vs big-bang approach?
 2. **Testing Approach**: Load testing scenarios and environments
-3. **Operational Readiness**: Team training and runbooks
-4. **Monitoring**: Custom metrics and alerting thresholds
+3. **Monitoring**: Custom metrics and alerting thresholds

@@ -473,47 +473,6 @@
             </div>
         </div>
 
-        <!-- Slide 6: Node Scaling Architecture -->
-        <div class="slide">
-            <h2>Node Scaling Architecture</h2>
-            
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-value">5</div>
-                    <div class="metric-label">Standard Nodes</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">0-20</div>
-                    <div class="metric-label">Burst Nodes</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">110</div>
-                    <div class="metric-label">Pods per Node</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">60-70%</div>
-                    <div class="metric-label">Spot Savings</div>
-                </div>
-            </div>
-            
-            <div class="highlight-box">
-                <h3>Multiple Node Pool Strategy</h3>
-                <h4>Standard Node Pool (Baseline)</h4>
-                <ul>
-                    <li><strong>Configuration</strong>: 5 nodes distributed across all availability zones</li>
-                    <li><strong>Instance Types</strong>: m5.large/m5.xlarge for cost-optimized steady-state</li>
-                    <li><strong>Purpose</strong>: Handle normal traffic loads with consistent performance</li>
-                </ul>
-                
-                <h4>Burst Node Pool (Traffic Spikes)</h4>
-                <ul>
-                    <li><strong>Configuration</strong>: Dedicated scaling pool for 25x traffic scenarios</li>
-                    <li><strong>Instance Types</strong>: m5.2xlarge/m5.4xlarge for higher pod density</li>
-                    <li><strong>Scaling</strong>: 0-20 nodes based on demand</li>
-                </ul>
-            </div>
-        </div>
-
         <!-- Slide 7: Event-Driven Scaling -->
         <div class="slide">
             <h2>Event-Driven Scaling with KEDA</h2>
@@ -531,7 +490,76 @@
             </div>
         </div>
 
-        <!-- Slide 8: Scale-Down Strategy -->
+        <!-- Slide 8: Node Scaling Architecture -->
+        <div class="slide">
+            <h2>Node Scaling Architecture</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Standard Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0-20</div>
+                    <div class="metric-label">Burst Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">110</div>
+                    <div class="metric-label">Pods per Node</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">60-90s</div>
+                    <div class="metric-label">New Node Time</div>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Multiple Node Pool Strategy</h3>
+                <h4>Standard Node Pool (Baseline)</h4>
+                <ul>
+                    <li><strong>Configuration</strong>: 5 nodes distributed across all availability zones</li>
+                    <li><strong>Instance Types</strong>: m5.large/m5.xlarge for cost-optimized steady-state operations</li>
+                    <li><strong>Purpose</strong>: Handle normal traffic loads with consistent performance</li>
+                    <li><strong>Scaling</strong>: Minimal scaling, maintains baseline capacity</li>
+                </ul>
+                
+                <h4>Burst Node Pool (Traffic Spikes)</h4>
+                <ul>
+                    <li><strong>Configuration</strong>: Dedicated scaling pool for 25x traffic scenarios</li>
+                    <li><strong>Instance Types</strong>: m5.2xlarge/m5.4xlarge for higher pod density (up to 110 pods per node)</li>
+                    <li><strong>Purpose</strong>: Rapid horizontal scaling during traffic spikes</li>
+                    <li><strong>Scaling</strong>: 0-20 nodes based on demand</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Cloud Provider Considerations</h3>
+                <ul>
+                    <li><strong>Limits</strong>: VM service limits, VPC limits (request increases proactively)</li>
+                    <li><strong>Instance Selection</strong>: Memory-optimized for native Java applications</li>
+                    <li><strong>Network Performance</strong>: Enhanced networking for high-throughput scenarios</li>
+                    <li><strong>Availability Zones</strong>: Multi-AZ distribution for fault tolerance</li>
+                </ul>
+                
+                <h3>Warm Node Pool Implementation</h3>
+                <ul>
+                    <li><strong>Pre-warmed Nodes</strong>: 2-3 nodes ready in burst pool during peak hours</li>
+                    <li><strong>Fast Provisioning</strong>: Pre-baked AMIs with container runtime and dependencies</li>
+                    <li><strong>Cost Optimization</strong>: Spot instances for burst scenarios (60-70% cost savings)</li>
+                    <li><strong>Auto-termination</strong>: Scale down unused nodes after 10 minutes of low utilization</li>
+                </ul>
+                
+                <h3>Cluster Autoscaler Configuration</h3>
+                <ul>
+                    <li><strong>Node Groups</strong>: Separate scaling policies for standard vs burst pools</li>
+                    <li><strong>Scale-up</strong>: Aggressive scaling (new nodes in 60-90 seconds)</li>
+                    <li><strong>Scale-down</strong>: Conservative approach (10-minute delay) to avoid thrashing</li>
+                    <li><strong>Resource Limits</strong>: Configure cloud provider quotas for 25x scaling capacity</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: Scale-Down Strategy -->
         <div class="slide">
             <h2>Scale-Down Strategy & Graceful Termination</h2>
             
@@ -571,7 +599,7 @@
             </div>
         </div>
 
-        <!-- Slide 9: Java Optimization -->
+        <!-- Slide 10: Java Optimization -->
         <div class="slide">
             <h2>Java Pod Optimization - Native Compilation</h2>
             
@@ -595,7 +623,7 @@
             </div>
         </div>
 
-        <!-- Slide 10: Container Image Strategy -->
+        <!-- Slide 11: Container Image Strategy -->
         <div class="slide">
             <h2>Container Image Scaling Strategy</h2>
             
@@ -619,17 +647,49 @@
             </div>
             
             <div class="highlight-box">
-                <h3>Image Optimization</h3>
+                <h3>Image Download & Distribution</h3>
+                <h4>Container Registry Optimization</h4>
                 <ul>
-                    <li><strong>Pull-Through Cache (Kube-Fledged)</strong>: In-cluster image caching</li>
-                    <li><strong>Multi-Stage Builds</strong>: Separate build from runtime dependencies</li>
-                    <li><strong>Distroless Runtime</strong>: Google's distroless base images</li>
-                    <li><strong>Pre-positioning</strong>: Cache images on warm nodes</li>
+                    <li><strong>High-Throughput Registry</strong>: Use cloud-native registries (ECR, ACR, GCR) with high bandwidth limits</li>
+                    <li><strong>Regional Replication</strong>: Deploy registry replicas across multiple AZs for faster image pulls</li>
+                    <li><strong>Bandwidth Planning</strong>: Configure registry to handle 25x concurrent image pulls within 60 seconds</li>
+                </ul>
+                
+                <h4>Pull-Through Cache Implementation (Kube-Fledged)</h4>
+                <ul>
+                    <li><strong>In-Cluster Caching</strong>: Deploy kube-fledged for local image caching within Kubernetes cluster</li>
+                    <li><strong>Pre-warming Strategy</strong>: Cache critical images on all nodes (standard + burst pools) before traffic spikes</li>
+                    <li><strong>Cache Hit Rate</strong>: Target >90% cache hit rate for critical application images</li>
+                    <li><strong>Automated Refresh</strong>: Schedule cache updates for new image versions during off-peak hours</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Image Optimization Strategy</h3>
+                <h4>Multi-Stage Build Optimization</h4>
+                <ul>
+                    <li><strong>Build Efficiency</strong>: Separate build dependencies from runtime dependencies using multi-stage Docker builds</li>
+                    <li><strong>Layer Caching</strong>: Optimize Docker layer caching and use BuildKit for faster builds</li>
+                    <li><strong>Distroless Runtime</strong>: Use Google's distroless base images for security and minimal size (10-20MB vs 100MB+)</li>
+                </ul>
+                
+                <h4>Image Size Reduction</h4>
+                <ul>
+                    <li><strong>Alpine Linux</strong>: Ultra-lightweight base images (5MB) for non-native builds</li>
+                    <li><strong>GraalVM Native</strong>: Already optimized images 50-70% smaller than JVM equivalents</li>
+                    <li><strong>Dependency Pruning</strong>: Remove unnecessary packages, files, and build artifacts from final images</li>
+                </ul>
+                
+                <h4>Performance Targets</h4>
+                <ul>
+                    <li><strong>Image Pull Time</strong>: &lt;30 seconds for new nodes with cache, &lt;90 seconds without cache</li>
+                    <li><strong>Registry Throughput</strong>: Support 100+ concurrent pulls during scaling events</li>
+                    <li><strong>Cache Efficiency</strong>: &gt;90% hit rate for application images, &lt;10% for base images</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Slide 11: Resilience Patterns -->
+        <!-- Slide 12: Resilience Patterns -->
         <div class="slide">
             <h2>Architecture Patterns - Resilience</h2>
             
@@ -658,7 +718,7 @@
             </div>
         </div>
 
-        <!-- Slide 12: Data Layer Scaling -->
+        <!-- Slide 13: Data Layer Scaling -->
         <div class="slide">
             <h2>Data Layer Scaling & Caching Strategy</h2>
             
@@ -701,17 +761,53 @@
             </div>
         </div>
 
-        <!-- Slide 13: Monitoring Strategy -->
+        <!-- Slide 14: Monitoring Strategy -->
         <div class="slide">
             <h2>Observability & Monitoring Strategy</h2>
             
             <div class="highlight-box">
                 <h3>Monitoring Stack Architecture</h3>
+                <h4>Core Monitoring Components</h4>
                 <ul>
-                    <li><strong>Prometheus</strong>: Metrics collection with custom business metrics</li>
-                    <li><strong>Grafana</strong>: Real-time dashboards and visualization</li>
-                    <li><strong>Jaeger</strong>: Distributed tracing across microservices</li>
-                    <li><strong>ELK Stack</strong>: Centralized logging and analysis</li>
+                    <li><strong>Prometheus</strong>: Metrics collection and storage with custom business metrics</li>
+                    <li><strong>Grafana</strong>: Real-time dashboards and visualization for all system components</li>
+                    <li><strong>Jaeger</strong>: Distributed tracing across microservices for request flow analysis (X-Forwarded, TRACE)</li>
+                    <li><strong>ELK Stack</strong>: Centralized logging (Elasticsearch, Logstash, Kibana) for log aggregation and analysis</li>
+                </ul>
+                
+                <h4>Integration Points</h4>
+                <ul>
+                    <li><strong>KEDA Integration</strong>: Prometheus custom metrics trigger proactive scaling</li>
+                    <li><strong>Application Metrics</strong>: Spring Boot Actuator endpoints expose JVM and application metrics</li>
+                    <li><strong>Infrastructure Metrics</strong>: Node exporter and cAdvisor for Kubernetes cluster monitoring</li>
+                    <li><strong>Database Monitoring</strong>: JMX metrics for connection pools and query performance</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Comprehensive Metrics Collection</h3>
+                <h4>Application Performance Metrics</h4>
+                <ul>
+                    <li><strong>Response Time</strong>: P50, P95, P99 latencies across all endpoints</li>
+                    <li><strong>Throughput</strong>: Requests per second, concurrent users, transaction volume</li>
+                    <li><strong>Error Rates</strong>: HTTP error codes, exception rates, circuit breaker failures</li>
+                    <li><strong>JVM Metrics</strong>: Heap usage, GC performance, thread pools (native vs JVM comparison)</li>
+                </ul>
+                
+                <h4>Infrastructure & Scaling Metrics</h4>
+                <ul>
+                    <li><strong>Pod Metrics</strong>: CPU/memory utilization, startup times, restart counts</li>
+                    <li><strong>Node Metrics</strong>: Resource utilization, pod density, network throughput</li>
+                    <li><strong>Scaling Events</strong>: HPA/KEDA trigger events, scaling latency, cool-down effectiveness</li>
+                    <li><strong>Image & Registry</strong>: Pull times, cache hit rates, registry throughput</li>
+                </ul>
+                
+                <h4>Database & Cache Performance</h4>
+                <ul>
+                    <li><strong>Connection Pool Metrics</strong>: Active connections, pool utilization, wait times, leak detection</li>
+                    <li><strong>Query Performance</strong>: Slow query monitoring, execution time tracking, deadlock detection</li>
+                    <li><strong>Replica Lag Monitoring</strong>: Real-time replication delay tracking across read replicas</li>
+                    <li><strong>Cache Efficiency</strong>: Redis hit rates, memory utilization, eviction rates, key distribution</li>
                 </ul>
             </div>
             
@@ -721,31 +817,59 @@
                     <div class="metric-label">Prometheus RAM</div>
                 </div>
                 <div class="metric-card">
+                    <div class="metric-value">100-500GB</div>
+                    <div class="metric-label">SSD Storage</div>
+                </div>
+                <div class="metric-card">
                     <div class="metric-value">15-day</div>
                     <div class="metric-label">Local Retention</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value">P50/P95/P99</div>
-                    <div class="metric-label">Latency Tracking</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">&gt;95%</div>
-                    <div class="metric-label">Graceful Termination</div>
+                    <div class="metric-value">4-8</div>
+                    <div class="metric-label">Logstash Workers</div>
                 </div>
             </div>
             
-            <div class="solution-box">
-                <h3>Key Performance Metrics</h3>
+            <div class="problem-box">
+                <h3>Monitoring During Scaling Events</h3>
+                <h4>Scale-Up Monitoring (0-60 seconds)</h4>
                 <ul>
-                    <li><strong>Application Performance</strong>: Response times, throughput, error rates</li>
-                    <li><strong>Scaling Events</strong>: HPA/KEDA triggers, scaling latency</li>
-                    <li><strong>Infrastructure</strong>: Resource utilization, pod density</li>
-                    <li><strong>Business Metrics</strong>: Traffic patterns, cost per transaction</li>
+                    <li><strong>Scaling Trigger Analysis</strong>: Root cause identification for scaling events</li>
+                    <li><strong>Resource Provisioning</strong>: Track node startup, pod scheduling, image pull times</li>
+                    <li><strong>Performance Impact</strong>: Monitor response times during scaling transitions</li>
+                    <li><strong>Capacity Validation</strong>: Verify 25x scaling targets are met within SLA</li>
+                </ul>
+                
+                <h4>Scale-Down Monitoring</h4>
+                <ul>
+                    <li><strong>Graceful Termination Tracking</strong>: >95% pods terminate gracefully within grace period</li>
+                    <li><strong>Shutdown Performance</strong>: Average termination time vs configured grace periods</li>
+                    <li><strong>Data Consistency</strong>: Monitor for data loss incidents during scale-down events</li>
+                    <li><strong>Cool-Down Effectiveness</strong>: Track premature scale-up events within cool-down periods</li>
+                </ul>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Scaling Monitoring Infrastructure in Kubernetes</h3>
+                <h4>Prometheus Scaling & Battle-Testing</h4>
+                <ul>
+                    <li><strong>Battle-Tested Configuration</strong>: Deploy with proven high-throughput configurations for 25x traffic scaling</li>
+                    <li><strong>Multi-Instance Setup</strong>: Multiple Prometheus instances with federation for horizontal scaling</li>
+                    <li><strong>Resource Allocation</strong>: Scale from 2GB to 8GB RAM, CPU scaling from 1 to 4 cores</li>
+                    <li><strong>Storage & Buffer Optimization</strong>: 100-500GB SSD storage, optimized WAL buffer configuration</li>
+                </ul>
+                
+                <h4>Monitoring Infrastructure Resilience</h4>
+                <ul>
+                    <li><strong>Cross-AZ Deployment</strong>: Distribute components across availability zones for fault tolerance</li>
+                    <li><strong>Resource Quotas</strong>: Dedicated quotas for monitoring namespace to prevent resource starvation</li>
+                    <li><strong>Network Policies</strong>: Network segmentation for monitoring traffic</li>
+                    <li><strong>Backup & Recovery</strong>: Automated backup of Prometheus data, Grafana dashboards, and alerting rules</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Slide 14: Cost Analysis -->
+        <!-- Slide 15: Cost Analysis -->
         <div class="slide">
             <h2>Cost-Effectiveness Analysis</h2>
             
@@ -769,64 +893,98 @@
             </div>
             
             <div class="highlight-box">
-                <h3>Cost Optimization Strategies</h3>
+                <h3>Image & Registry Cost Optimization</h3>
                 <ul>
-                    <li><strong>Node-Level</strong>: Spot instances for burst pools, right-sizing for native apps</li>
-                    <li><strong>Image & Registry</strong>: Pull-through cache reduces bandwidth costs</li>
+                    <li><strong>Registry Replication</strong>: Multi-region setup increases costs but reduces latency</li>
+                    <li><strong>Pull-Through Cache</strong>: Kube-fledged reduces registry bandwidth costs over time</li>
+                    <li><strong>Image Optimization</strong>: Smaller images reduce storage and transfer costs</li>
+                    <li><strong>Scheduled Cache Refresh</strong>: Off-peak image updates minimize bandwidth charges</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Node-Level Cost Optimization</h3>
+                <ul>
+                    <li><strong>Spot Instances</strong>: 60-70% savings on burst node pool</li>
+                    <li><strong>Right-Sizing</strong>: Memory-optimized instances for native applications</li>
                     <li><strong>Scheduled Scaling</strong>: Scale down warm nodes during off-peak hours</li>
+                    <li><strong>Reserved Instances</strong>: Standard node pool with 1-year commitment (40% savings)</li>
                     <li><strong>Multi-AZ Strategy</strong>: Balance cost vs availability requirements</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Slide 15: Success Metrics -->
+        <!-- Slide 16: Success Metrics -->
         <div class="slide">
             <h2>Metrics for Success</h2>
             
             <div class="highlight-box">
-                <h3>Performance Targets</h3>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value">&lt; 60s</div>
-                        <div class="metric-label">Scaling Time</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">&lt; 30s</div>
-                        <div class="metric-label">Pod Startup</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">&lt; 200ms</div>
-                        <div class="metric-label">Response Time</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">99.9%</div>
-                        <div class="metric-label">Availability</div>
-                    </div>
-                </div>
+                <h3>Key Performance Indicators (KPIs)</h3>
+                <h4>Performance Targets</h4>
+                <ul>
+                    <li><strong>Scaling Time</strong>: &lt; 60 seconds to handle 25x traffic (vs current manual intervention)</li>
+                    <li><strong>Pod Startup Time</strong>: &lt; 30 seconds (vs 2-3 minutes with traditional JVM)</li>
+                    <li><strong>Response Time</strong>: &lt; 200ms during spikes (vs 2-5 seconds current degradation)</li>
+                    <li><strong>Availability</strong>: 99.9% uptime during traffic spikes</li>
+                </ul>
             </div>
             
             <div class="solution-box">
                 <h3>Business Impact Metrics</h3>
                 <ul>
-                    <li><strong>Customer Satisfaction</strong>: &lt; 1% error rate during peak events</li>
-                    <li><strong>Operational Efficiency</strong>: Zero manual interventions required</li>
-                    <li><strong>System Resilience</strong>: &lt; 5% circuit breaker activation rate</li>
-                    <li><strong>Cost Efficiency</strong>: Revenue protection during outages</li>
+                    <li><strong>Customer Satisfaction</strong>: &lt; 1% error rate during peak traffic events</li>
+                    <li><strong>Operational Efficiency</strong>: Zero manual interventions required during scaling events</li>
+                    <li><strong>Cost Optimization</strong>: Reduction in overall infrastructure costs</li>
+                </ul>
+                
+                <h3>Technical Success Criteria</h3>
+                <ul>
+                    <li><strong>Memory Efficiency</strong>: &lt; 70% utilization during normal operations, &lt; 80% during spikes</li>
+                    <li><strong>CPU Performance</strong>: &lt; 80% utilization during 25x traffic scaling events</li>
+                    <li><strong>Scaling Effectiveness</strong>: 900% pod increase capability within 15 seconds</li>
+                    <li><strong>System Resilience</strong>: &lt; 5% circuit breaker activation rate during normal operations</li>
                 </ul>
             </div>
             
             <div class="problem-box">
-                <h3>Infrastructure Efficiency KPIs</h3>
+                <h3>Infrastructure Efficiency</h3>
                 <ul>
-                    <li><strong>Node Scaling</strong>: &lt; 90s for new node provisioning</li>
-                    <li><strong>Image Performance</strong>: &gt; 90% cache hit rate</li>
-                    <li><strong>Resource Utilization</strong>: &lt; 80% pod capacity per node</li>
-                    <li><strong>Data Integrity</strong>: Zero data loss during scaling</li>
+                    <li><strong>Node Scaling</strong>: &lt; 90 seconds for new node provisioning and readiness</li>
+                    <li><strong>Image Performance</strong>: &gt; 90% cache hit rate for application images during scaling</li>
+                    <li><strong>Resource Utilization</strong>: &lt; 80% pod capacity per node during maximum scaling</li>
+                    <li><strong>Cost Efficiency</strong>: 60-70% savings through spot instance utilization in burst pools</li>
                 </ul>
+                
+                <h3>Operational Excellence</h3>
+                <ul>
+                    <li><strong>Graceful Operations</strong>: &gt; 95% pods terminate gracefully within configured grace periods</li>
+                    <li><strong>Data Integrity</strong>: Zero data loss incidents during scaling operations</li>
+                    <li><strong>Predictive Scaling</strong>: &lt; 2% false positive scaling events within cool-down periods</li>
+                    <li><strong>Multi-AZ Resilience</strong>: Maintain 33% capacity distribution across availability zones</li>
+                </ul>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">&lt; 60s</div>
+                    <div class="metric-label">Scaling Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">&lt; 30s</div>
+                    <div class="metric-label">Pod Startup</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">&lt; 200ms</div>
+                    <div class="metric-label">Response Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">99.9%</div>
+                    <div class="metric-label">Availability</div>
+                </div>
             </div>
         </div>
 
-        <!-- Slide 16: Executive Summary -->
+        <!-- Slide 17: Executive Summary -->
         <div class="slide">
             <h2>Executive Summary</h2>
             
@@ -872,7 +1030,7 @@
             </div>
         </div>
 
-        <!-- Slide 17: Questions & Discussion -->
+        <!-- Slide 18: Questions & Discussion -->
         <div class="slide">
             <h2>Questions & Discussion</h2>
             
