@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapid Auto-Scaling Architecture for Java Spring Boot Microservices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f4f8 0%, #f0f8f4 50%, #f8f0f8 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            min-height: 100vh;
+            padding: 60px 40px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.9);
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .slide.active {
+            display: block;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide h1 {
+            color: #2c3e50;
+            font-size: 2.8em;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide h2 {
+            color: #34495e;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            border-left: 4px solid #a8e6cf;
+            padding-left: 20px;
+        }
+
+        .slide h3 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        .slide h4 {
+            color: #34495e;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            color: #34495e;
+        }
+
+        .slide ul, .slide ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        .slide li {
+            margin-bottom: 8px;
+        }
+
+        .slide strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .slide code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        .slide pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid #a8e6cf;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #a8e6cf 0%, #88d8c0 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(168, 230, 207, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            color: #2c3e50;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .title-slide {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-slide h1 {
+            font-size: 3.5em;
+            margin-bottom: 40px;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.4em;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #e8f5e8 100%);
+            border: 1px solid #a8e6cf;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .problem-box {
+            background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+            border: 1px solid #f8bbd9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .solution-box {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f4 100%);
+            border: 1px solid #a8e6cf;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #b3d9ff;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .architecture-flow {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .flow-step {
+            display: inline-block;
+            background: #a8e6cf;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 25px;
+            font-weight: 500;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 30px 0;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #a8e6cf;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #a8e6cf;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #a8e6cf 0%, #88d8c0 100%);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 20px;
+                margin: 10px;
+            }
+
+            .slide h1 {
+                font-size: 2.2em;
+            }
+
+            .slide h2 {
+                font-size: 1.8em;
+            }
+
+            .navigation {
+                bottom: 20px;
+                padding: 10px 15px;
+            }
+
+            .nav-btn {
+                padding: 10px 15px;
+                margin: 0 5px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-counter" id="slideCounter">1 / 17</div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active title-slide">
+            <h1>Rapid Auto-Scaling Architecture Solution</h1>
+            <div class="subtitle">Handling 25x Traffic Spikes in Under 60 Seconds</div>
+            <div class="subtitle">Java Spring Boot Microservices on Kubernetes</div>
+            <div class="subtitle">Cost-Effective Scaling Strategy</div>
+        </div>
+
+        <!-- Slide 2: Problem Statement -->
+        <div class="slide">
+            <h2>Problem Statement</h2>
+            
+            <div class="problem-box">
+                <h3>Current Challenges</h3>
+                <ul>
+                    <li><strong>Traffic Spikes</strong>: 25x normal load within 1 minute, multiple times per week</li>
+                    <li><strong>Slow Java Startup</strong>: 2-3 minutes for pods to handle traffic (major bottleneck)</li>
+                    <li><strong>Manual Scaling</strong>: Requires human intervention during spikes</li>
+                    <li><strong>Performance Degradation</strong>: System struggles during traffic surges</li>
+                    <li><strong>Cost Concerns</strong>: Need to avoid waste during low-traffic periods</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <h3>Business Impact</h3>
+                <ul>
+                    <li>Revenue loss during performance degradation</li>
+                    <li>Customer experience deterioration</li>
+                    <li>Operational overhead from manual interventions</li>
+                    <li>Potential system failures during peak loads</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Solution Overview -->
+        <div class="slide">
+            <h2>Proposed Solution Overview</h2>
+            
+            <div class="solution-box">
+                <h3>High-Level Architecture</h3>
+                <p><a href="https://www.mermaidchart.com/play?utm_source=mermaid_live_editor&utm_medium=toggle#pako:eNqFVm1P20gQ_iurVEKH7twjCS7UOlVyXqCUBELMgarmPqzX42QV2xut17ThdP_9ZtbGjeNA-RLv45lnZp6dGfNvR6gIOl7HcZxFJlQWy6W3yBhLlFp7TCQ8z6UgwKwgBY-FPAf7nm9VYTwGyXqRWec4Ud_FimvD7gdokRfhUvPNih4u6eHk26LjF0Y5geCJzJZswregF51_iK78-zzz0eiz0vJZZYYnbKYiRj45uoD-K9SfhrO__5xCqvSWDTCViLC-c-YyDZtECp43CK_HI2KkHxbUHOMnyIwz0hJ_6XzN4zVnv7OZVilgnUWT5MFm9QDaIP-hnOaQq0ILYLcbI1P5zI1UWYNiSAzDpMgN6D3nG9SfVZJUPpBFhwTsIscj1ylmoJIG_eNs513EumVSPNqywHADe7a9Xdve27b9Xdv-YdtX0qUwqIxMJGSozYwbLD5rSjsckC5Si0IaNtDA16UoFzxJQi7WbKKW2H5vxqEUh3fzgPlarKQBYQrdLGM4HZGNSlOeRSwA_SQF5BTnUaMDXhtoe2cW6zmvNNPd_CvS3BWAvbdLQorscbhOt9dieSX_U2rQIkRtwEDOqi5pRPZnMzQKNprGZqCUYTcY6wko1FQKrfKddJCUJw9TdpXyJTQrmJDcE4XpDnjC8Vas2FfZUkOOkXHmtEqSveD1_LahbhvqtaH-G8W7mJAdR-wovP705xBUA-xfXNPs-BsuVsDspNYjzAaFrfhe8ziWAucXIil2hu-VoB-QcMQNP7CBpl-Du8m33xad6RYfiHymZcrxxsmBlp9dQirLwAays2iTPt5hmY9HVwGxzDGh-krJcyRzo2VYGIjYkEoiMED1iSswijr3uLE4gsC_Gc19YhviMsYO1laBe5mCg20osWcoN8J2Nme9UY7fUuIMlZiqTGJgaq0jdhtSK_EQp9ZsG8rM5rdTtP65I23zAVYjqHWwbURr7V3O_Qv_hu4Po8U8s0mOeL4KFddRsze_-OPL8RxNv3BYtsXCOxb7zTGeXFP7TK5pHYm1vRlsC42VP6ML7o7l_lIlSWkhGbuP6YFV3WNH3_3Bgo1c27FhjvMJJ6Z0mgzsEQexPNu-tJD9thzRjinfoInFhwNESTT8KWvDB8r1qHSukil50RtxXDAVikeCbTeWEL6zkG0tivfSGOVr_HIy530jQ8qrCT20jIb7gE2Y4lRXR9kiUaU5RvE8L69aK6s_sS3w4YDhsA3hdwsxvtnU597eud84oy6NM4rSOGMZjbMVGpEI56OCrKRNyErahGp1mzCpg0haTkwFVkq18PLSWzC2wD5m_8saQcwqdVgsk8R7B93YjeEPnAG1Bu_dSdc9-xhWR-e7jMzK621-7FFQtpV_3Ac3dmv_U949PRe_8kfxXsKfxy6c1-7d0IXeya_cq7peMogxh5OaAj643ZNDFJ3__gfhbEux" target="_blank" rel="noopener">Architecture Diagram Link</a></p>
+            </div>
+
+            <div class="architecture-flow">
+                <h3>Architecture Flow</h3>
+                <div>
+                    <div class="flow-step">KEDA Event-Driven</div>
+                    <div class="flow-step">HPA Reactive</div>
+                    <div class="flow-step">VPA Optimization</div>
+                    <div class="flow-step">Cluster Autoscaler</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>Key Components Integration</h4>
+                <ul>
+                    <li><strong>KEDA</strong>: Monitors Kafka queue depth for traffic prediction</li>
+                    <li><strong>HPA</strong>: Handles CPU/memory-based reactive scaling</li>
+                    <li><strong>VPA</strong>: Optimizes resource requests/limits for native images</li>
+                    <li><strong>Cluster Autoscaler</strong>: Adds/removes nodes based on demand</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Phase 1 Scaling -->
+        <div class="slide">
+            <h2>Scaling Strategy - Phase 1</h2>
+            
+            <div class="solution-box">
+                <h3>GraalVM Native + Warm Pool Approach</h3>
+                
+                <h4>Native Compilation Benefits</h4>
+                <ul>
+                    <li><strong>GraalVM Native Images</strong>: Compile Java applications to native executables</li>
+                    <li>Reducing startup from <strong>2-3 minutes to 15-30 seconds</strong></li>
+                </ul>
+                
+                <h4>Warm Pool Configuration</h4>
+                <ul>
+                    <li><strong>Baseline</strong>: 3 pre-warmed pods during normal traffic</li>
+                    <li><strong>Memory</strong>: 128Mi request, 256Mi limit (50% reduction vs JVM)</li>
+                    <li><strong>CPU</strong>: 100m request, 500m limit</li>
+                    <li><strong>Cost</strong>: ~$75-150/month for 24/7 warm pool</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Phase 2 Scaling -->
+        <div class="slide">
+            <h2>Scaling Strategy - Phase 2</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>0-15 seconds</h4>
+                    <p>Warm pool handles initial spike</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>15-45 seconds</h4>
+                    <p>HPA scales additional pods (900% increase capability in 15 seconds)</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>45-60 seconds</h4>
+                    <p>Full 25x capacity available</p>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Horizontal Pod Autoscaler (HPA)</h3>
+                <p><strong>Configuration</strong>: Aggressive scaling from 3 to 75 replicas with 900% increase capability in 15 seconds for rapid response to traffic spikes</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Node Scaling Architecture -->
+        <div class="slide">
+            <h2>Node Scaling Architecture</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">5</div>
+                    <div class="metric-label">Standard Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0-20</div>
+                    <div class="metric-label">Burst Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">110</div>
+                    <div class="metric-label">Pods per Node</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">60-70%</div>
+                    <div class="metric-label">Spot Savings</div>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Multiple Node Pool Strategy</h3>
+                <h4>Standard Node Pool (Baseline)</h4>
+                <ul>
+                    <li><strong>Configuration</strong>: 5 nodes distributed across all availability zones</li>
+                    <li><strong>Instance Types</strong>: m5.large/m5.xlarge for cost-optimized steady-state</li>
+                    <li><strong>Purpose</strong>: Handle normal traffic loads with consistent performance</li>
+                </ul>
+                
+                <h4>Burst Node Pool (Traffic Spikes)</h4>
+                <ul>
+                    <li><strong>Configuration</strong>: Dedicated scaling pool for 25x traffic scenarios</li>
+                    <li><strong>Instance Types</strong>: m5.2xlarge/m5.4xlarge for higher pod density</li>
+                    <li><strong>Scaling</strong>: 0-20 nodes based on demand</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7: Event-Driven Scaling -->
+        <div class="slide">
+            <h2>Event-Driven Scaling with KEDA</h2>
+            
+            <div class="solution-box">
+                <h3>Predictive Scaling</h3>
+                <p><strong>KEDA Configuration</strong>: Event-driven autoscaler using Kafka queue depth and Prometheus custom metrics to trigger proactive scaling before traffic spikes</p>
+                
+                <h3>Benefits</h3>
+                <ul>
+                    <li><strong>Proactive Scaling</strong>: Scale before traffic hits</li>
+                    <li><strong>Queue-Based</strong>: React to Kafka message backlog</li>
+                    <li><strong>Custom Metrics</strong>: Use business-specific indicators</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: Scale-Down Strategy -->
+        <div class="slide">
+            <h2>Scale-Down Strategy & Graceful Termination</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Phase 1: Preparation (0-10 seconds)</h4>
+                    <ul>
+                        <li>Pod receives SIGTERM signal</li>
+                        <li>Update readiness probe to fail</li>
+                        <li>Run preStop hooks and cleanup</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 2: Graceful Completion (10-60 seconds)</h4>
+                    <ul>
+                        <li>Complete in-flight requests</li>
+                        <li>Close connections and flush caches</li>
+                        <li>Ensure data consistency</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 3: Force Termination</h4>
+                    <ul>
+                        <li>SIGKILL if grace period exceeded</li>
+                        <li>Monitor and alert on forced terminations</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Cool Down Configuration</h3>
+                <ul>
+                    <li><strong>HPA Stabilization</strong>: 300s window to prevent thrashing</li>
+                    <li><strong>KEDA Cool Down</strong>: 300s for event-driven scalers</li>
+                    <li><strong>Custom Metrics</strong>: Business-logic-based cool-down</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: Java Optimization -->
+        <div class="slide">
+            <h2>Java Pod Optimization - Native Compilation</h2>
+            
+            <div class="solution-box">
+                <h3>Spring Boot Native Migration</h3>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4>1. Upgrade to Spring Boot 3.x</h4>
+                        <p>Framework update with built-in GraalVM native image support</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2. Add GraalVM Native Plugin</h4>
+                        <p>Configure Maven/Gradle plugin for native compilation during build</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>3. Runtime Hints Configuration</h4>
+                        <p>Add runtime hints for reflection, serialization, and dynamic proxy usage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Container Image Strategy -->
+        <div class="slide">
+            <h2>Container Image Scaling Strategy</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">&lt;30s</div>
+                    <div class="metric-label">Image Pull (cached)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">&gt;90%</div>
+                    <div class="metric-label">Cache Hit Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">10-20MB</div>
+                    <div class="metric-label">Image Size (vs 100MB+)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">100+</div>
+                    <div class="metric-label">Concurrent Pulls</div>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Image Optimization</h3>
+                <ul>
+                    <li><strong>Pull-Through Cache (Kube-Fledged)</strong>: In-cluster image caching</li>
+                    <li><strong>Multi-Stage Builds</strong>: Separate build from runtime dependencies</li>
+                    <li><strong>Distroless Runtime</strong>: Google's distroless base images</li>
+                    <li><strong>Pre-positioning</strong>: Cache images on warm nodes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 11: Resilience Patterns -->
+        <div class="slide">
+            <h2>Architecture Patterns - Resilience</h2>
+            
+            <div class="highlight-box">
+                <h3>Circuit Breaker Pattern</h3>
+                <p><strong>Implementation</strong>: Use Spring Cloud Circuit Breaker with fallback methods to prevent cascade failures and provide graceful degradation during database overload</p>
+                
+                <h4>Configuration</h4>
+                <ul>
+                    <li><strong>Failure Threshold</strong>: 50% failures in 10 requests</li>
+                    <li><strong>Wait Duration</strong>: 30 seconds before retry</li>
+                    <li><strong>Fallback</strong>: Cached data or graceful degradation</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>CQRS (Command Query Responsibility Segregation)</h3>
+                <p><strong>Strategy</strong>: Split read and write operations into separate services allowing independent scaling</p>
+                
+                <h4>Scaling Strategy</h4>
+                <ul>
+                    <li><strong>Command Services</strong>: 2-5 replicas (writes are lower volume)</li>
+                    <li><strong>Query Services</strong>: 5-125 replicas (25x scaling for reads)</li>
+                    <li><strong>Event Streaming</strong>: Kafka handles async communication</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 12: Data Layer Scaling -->
+        <div class="slide">
+            <h2>Data Layer Scaling & Caching Strategy</h2>
+            
+            <div class="highlight-box">
+                <h3>Database Connection Pooling</h3>
+                <h4>HikariCP Configuration</h4>
+                <ul>
+                    <li><strong>Dynamic Scaling</strong>: 10 (normal) to 50 (spike) connections per service</li>
+                    <li><strong>Pool Settings</strong>: maximumPoolSize=50, minimumIdle=10</li>
+                    <li><strong>Multi-tier Pooling</strong>: Separate pools for critical vs non-critical services</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Read Replica Architecture</h3>
+                <ul>
+                    <li><strong>Multi-AZ Replicas</strong>: Deploy 3-5 read replicas across availability zones</li>
+                    <li><strong>Read Scaling</strong>: Handle 80% of read traffic through replicas during normal operations, 90% during spikes</li>
+                    <li><strong>Connection String Management</strong>: Environment variables for primary and replica connections</li>
+                </ul>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">6-node</div>
+                    <div class="metric-label">Redis Cluster</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">3-9</div>
+                    <div class="metric-label">Cassandra Nodes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">10-50</div>
+                    <div class="metric-label">Connection Pool Size</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">RF=3</div>
+                    <div class="metric-label">Replication Factor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Monitoring Strategy -->
+        <div class="slide">
+            <h2>Observability & Monitoring Strategy</h2>
+            
+            <div class="highlight-box">
+                <h3>Monitoring Stack Architecture</h3>
+                <ul>
+                    <li><strong>Prometheus</strong>: Metrics collection with custom business metrics</li>
+                    <li><strong>Grafana</strong>: Real-time dashboards and visualization</li>
+                    <li><strong>Jaeger</strong>: Distributed tracing across microservices</li>
+                    <li><strong>ELK Stack</strong>: Centralized logging and analysis</li>
+                </ul>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">2-8GB</div>
+                    <div class="metric-label">Prometheus RAM</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">15-day</div>
+                    <div class="metric-label">Local Retention</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">P50/P95/P99</div>
+                    <div class="metric-label">Latency Tracking</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">&gt;95%</div>
+                    <div class="metric-label">Graceful Termination</div>
+                </div>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Key Performance Metrics</h3>
+                <ul>
+                    <li><strong>Application Performance</strong>: Response times, throughput, error rates</li>
+                    <li><strong>Scaling Events</strong>: HPA/KEDA triggers, scaling latency</li>
+                    <li><strong>Infrastructure</strong>: Resource utilization, pod density</li>
+                    <li><strong>Business Metrics</strong>: Traffic patterns, cost per transaction</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 14: Cost Analysis -->
+        <div class="slide">
+            <h2>Cost-Effectiveness Analysis</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">31%</div>
+                    <div class="metric-label">Overall Cost Reduction</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">60-70%</div>
+                    <div class="metric-label">Spot Instance Savings</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">50-70%</div>
+                    <div class="metric-label">Memory Reduction</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">40%</div>
+                    <div class="metric-label">Reserved Instance Savings</div>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Cost Optimization Strategies</h3>
+                <ul>
+                    <li><strong>Node-Level</strong>: Spot instances for burst pools, right-sizing for native apps</li>
+                    <li><strong>Image & Registry</strong>: Pull-through cache reduces bandwidth costs</li>
+                    <li><strong>Scheduled Scaling</strong>: Scale down warm nodes during off-peak hours</li>
+                    <li><strong>Multi-AZ Strategy</strong>: Balance cost vs availability requirements</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 15: Success Metrics -->
+        <div class="slide">
+            <h2>Metrics for Success</h2>
+            
+            <div class="highlight-box">
+                <h3>Performance Targets</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">&lt; 60s</div>
+                        <div class="metric-label">Scaling Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">&lt; 30s</div>
+                        <div class="metric-label">Pod Startup</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">&lt; 200ms</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Availability</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Business Impact Metrics</h3>
+                <ul>
+                    <li><strong>Customer Satisfaction</strong>: &lt; 1% error rate during peak events</li>
+                    <li><strong>Operational Efficiency</strong>: Zero manual interventions required</li>
+                    <li><strong>System Resilience</strong>: &lt; 5% circuit breaker activation rate</li>
+                    <li><strong>Cost Efficiency</strong>: Revenue protection during outages</li>
+                </ul>
+            </div>
+            
+            <div class="problem-box">
+                <h3>Infrastructure Efficiency KPIs</h3>
+                <ul>
+                    <li><strong>Node Scaling</strong>: &lt; 90s for new node provisioning</li>
+                    <li><strong>Image Performance</strong>: &gt; 90% cache hit rate</li>
+                    <li><strong>Resource Utilization</strong>: &lt; 80% pod capacity per node</li>
+                    <li><strong>Data Integrity</strong>: Zero data loss during scaling</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 16: Executive Summary -->
+        <div class="slide">
+            <h2>Executive Summary</h2>
+            
+            <div class="problem-box">
+                <h3>Problem Statement</h3>
+                <ul>
+                    <li>25x load spikes within 1 minute, multiple times per week</li>
+                    <li>2-3 minute Java pod startup preventing rapid scaling</li>
+                    <li>Manual intervention required, revenue loss during outages</li>
+                </ul>
+            </div>
+            
+            <div class="solution-box">
+                <h3>Proposed Solution</h3>
+                <ul>
+                    <li><strong>GraalVM Native</strong>: 90% startup time reduction, 50-70% memory savings</li>
+                    <li><strong>Multi-Tier Scaling</strong>: Pod, Node, and Image-level optimization</li>
+                    <li><strong>Warm Pool Strategy</strong>: Pre-warmed resources for immediate response</li>
+                    <li><strong>Resilient Architecture</strong>: Circuit breakers, CQRS, graceful operations</li>
+                </ul>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Expected Outcomes</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">&lt; 60s</div>
+                        <div class="metric-label">Total Scaling Time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">31%</div>
+                        <div class="metric-label">Cost Reduction</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Availability Target</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">Zero</div>
+                        <div class="metric-label">Manual Interventions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Questions & Discussion -->
+        <div class="slide">
+            <h2>Questions & Discussion</h2>
+            
+            <div class="title-slide">
+                <h3>Key Discussion Points</h3>
+                
+                <div class="highlight-box" style="text-align: left; max-width: 800px;">
+                    <h4>1. Migration Strategy</h4>
+                    <p>Gradual vs big-bang approach for GraalVM native migration?</p>
+                    
+                    <h4>2. Testing Approach</h4>
+                    <p>Load testing scenarios and environments for 25x scaling validation?</p>
+                    
+                    <h4>3. Operational Readiness</h4>
+                    <p>Team training requirements and operational runbooks?</p>
+                    
+                    <h4>4. Monitoring & Alerting</h4>
+                    <p>Custom metrics and alerting thresholds for scaling events?</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) currentSlide = 0;
+            if (n < 0) currentSlide = totalSlides - 1;
+            
+            slides[currentSlide].classList.add('active');
+            
+            // Update slide counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                event.preventDefault();
+                if (currentSlide < totalSlides - 1) changeSlide(1);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                if (currentSlide > 0) changeSlide(-1);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                currentSlide = 0;
+                showSlide(currentSlide);
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                currentSlide = totalSlides - 1;
+                showSlide(currentSlide);
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let startX = null;
+        let startY = null;
+
+        document.addEventListener('touchstart', function(event) {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(event) {
+            if (!startX || !startY) return;
+            
+            let endX = event.changedTouches[0].clientX;
+            let endY = event.changedTouches[0].clientY;
+            
+            let diffX = startX - endX;
+            let diffY = startY - endY;
+            
+            // Only trigger if horizontal swipe is more significant than vertical
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0 && currentSlide < totalSlides - 1) {
+                    changeSlide(1); // Swipe left - next slide
+                } else if (diffX < 0 && currentSlide > 0) {
+                    changeSlide(-1); // Swipe right - previous slide
+                }
+            }
+            
+            startX = null;
+            startY = null;
+        });
+
+        // Initialize
+        showSlide(0);
+
+        // Prevent context menu on long press (mobile)
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
